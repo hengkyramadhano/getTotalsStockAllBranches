@@ -715,7 +715,6 @@ mylist = [
   "OMTHP0BQ",
   "OMST3BBK",
   "OMTP7HGY",
-  "OMHAY9BL",
   "7RRS3TBK",
   "OMHR9RBK",
   "7RLL0MWH",
@@ -805,7 +804,6 @@ mylist = [
   "7RHZDUGD",
   "7RRS7SXX",
   "OMCS2CBK",
-  "7ROT5FYL",
   "7RHRCDBK",
   "7RRSEVTP",
   "7CHZAUBK",
@@ -1120,7 +1118,6 @@ mylist = [
   "OMOT2CBR",
   "7RSK7BBQ",
   "OMHXBDBL",
-  "7RHZ4QDW",
   "7RFB1XDB",
   "OMHALUOR",
   "OMHAM8RE",
@@ -1227,5 +1224,9 @@ mylist = [
   "OMHX3JBK",
   "7RUA13BL",
   "OMHRBOBK",
-  "7RTP7SBL"
+  "7RTP7SBL",
+  "OISE07PN",
+  "OMOT1TBL",
+  "OMHX5VBK",
+  "7CHX5OBR"
 ]
