@@ -1,9 +1,11 @@
 import requests
 import json
 import sys
+import importlib
 import pandas as pd
 from types import SimpleNamespace
 from variables import mylist
+import time
 
 def hit_api(sku) :
 
@@ -56,31 +58,52 @@ def update_progress(progress):
 
 SKU_Store = []
 
-try :
-    print(f"Isi dari param ke-1: {sys.argv[1]}")
-    for sku_item in range(1 , len(sys.argv)):
-        sku_terminal = sys.argv[sku_item]
+file_name = ""
 
+if len(sys.argv) > 1:  # Memastikan ada argumen yang diberikan
+  if sys.argv[1] not in ("tiktok", "netlook", "shopee", "tourisme"): # Nama file sku
+      print("Argumen tidak valid")
+      for sku_item in range(1 , len(sys.argv)):
+        sku_terminal = sys.argv[sku_item]
+        
         data = hit_api(sku_terminal)
         SKU_Store.append(data)
         print(json.dumps(data, indent=4))
-
-except IndexError as e:
-    print(f"Data sku di ambil dari Variables.py {e}")
-
+  else:
+    print("Masuk ke import file")
+    
+    file_name = sys.argv[1]
+    module = importlib.import_module(file_name)
+    mylist = getattr(module, 'mylist')
+    
     jumlahSKU = len(mylist)
     print(f"Total SKU: {jumlahSKU}")
     i = 1
     for sku in mylist:
-        try:
-            data = hit_api(sku)
-            SKU_Store.append(data)
-            if (i <= jumlahSKU):
-              update_progress((i / jumlahSKU))
-              i+=1
-        except Exception as e:
-            print(f"Error for sku {sku}: {e}")
+      try:
+        data = hit_api(sku)
+        SKU_Store.append(data)
+        if (i <= jumlahSKU):
+          update_progress((i / jumlahSKU))
+          i+=1
+      except Exception as e:
+        print(f"Error for sku {sku}: {e}")
+else:
+  print("Tidak ada argumen yang diberikan")
+  jumlahSKU = len(mylist)
+  print(f"Total SKU: {jumlahSKU}")
+  i = 1
+  for sku in mylist:
+    try:
+      data = hit_api(sku)
+      SKU_Store.append(data)
+      if (i <= jumlahSKU):
+        update_progress((i / jumlahSKU))
+        i+=1
+    except Exception as e:
+      print(f"Error for sku {sku}: {e}")
             
-    # export to excel
-    df = pd.DataFrame(SKU_Store)
-    df.to_excel(f'stock.xlsx', index=False)
+# export to excel
+df = pd.DataFrame(SKU_Store)
+curr_time = time.strftime("%H_%M_%S", time.localtime())
+df.to_excel(f'{file_name}-{curr_time}.xlsx', index=False)

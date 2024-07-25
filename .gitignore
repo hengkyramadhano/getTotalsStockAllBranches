@@ -1,6 +1,4 @@
-variables-jn.py
-variables-tk.py
-variables-tourisme.py
+*.xlsx
 stock.xlsx
 ProgressBar.py
 Main2.py
