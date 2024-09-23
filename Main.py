@@ -56,6 +56,12 @@ def update_progress(progress):
     sys.stdout.write(f'\rProgress: [{bar}] {int(progress * 100)}%')
     sys.stdout.flush()
 
+# export to excel
+def export_to_excel():
+  df = pd.DataFrame(SKU_Store)
+  curr_time = time.strftime("%H_%M_%S", time.localtime())
+  df.to_excel(f'{file_name}-{curr_time}.xlsx', index=False)
+
 SKU_Store = []
 
 file_name = ""
@@ -67,7 +73,7 @@ if len(sys.argv) > 1:  # Memastikan ada argumen yang diberikan
         sku_terminal = sys.argv[sku_item]
         
         data = hit_api(sku_terminal)
-        SKU_Store.append(data)
+        # SKU_Store.append(data)
         print(json.dumps(data, indent=4))
   else:
     print("Masuk ke import file")
@@ -88,6 +94,7 @@ if len(sys.argv) > 1:  # Memastikan ada argumen yang diberikan
           i+=1
       except Exception as e:
         print(f"Error for sku {sku}: {e}")
+    export_to_excel()
 else:
   print("Tidak ada argumen yang diberikan")
   jumlahSKU = len(mylist)
@@ -102,8 +109,5 @@ else:
         i+=1
     except Exception as e:
       print(f"Error for sku {sku}: {e}")
+  export_to_excel()
             
-# export to excel
-df = pd.DataFrame(SKU_Store)
-curr_time = time.strftime("%H_%M_%S", time.localtime())
-df.to_excel(f'{file_name}-{curr_time}.xlsx', index=False)
