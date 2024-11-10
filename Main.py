@@ -25,6 +25,22 @@ def hit_api(sku) :
       },
       "query": "mutation AllCheckoutOptions($input: CheckoutRequestInput!) {\n  getCheckoutOptions(requestBody: $input) {\n    online {\n      text\n      stores {\n        ...storesInfo\n        __typename\n      }\n      type\n      __typename\n    }\n    pickup {\n      text\n      stores {\n        ...storesInfo\n        __typename\n      }\n      type\n      __typename\n    }\n    cod {\n      text\n      isEnabled\n      disabledText\n      fees {\n        weight {\n          min\n          max\n          __typename\n        }\n        isSelected\n        fee\n        __typename\n      }\n      stores {\n        ...storesInfo\n        __typename\n      }\n      type\n      __typename\n    }\n    announcements\n    __typename\n  }\n}\n\nfragment storesInfo on CheckoutStore {\n  name\n  options {\n    skuList {\n      stockValue\n    }\n   }\n }"
     })
+
+    payloadRemindMe = json.dumps([
+      {
+        "operationName": "AddProductSKUToRemindMe",
+        "variables": {
+          "requestBody": {
+            "branchIds": [
+              "jz23mo"
+            ],
+            "email": "hengkyramadhano@gmail.com",
+            "id": sku
+          }
+        },
+        "query": "mutation AddProductSKUToRemindMe($requestBody: ProductSkuAddProductSKUToRemindMeInput!) {\n  addProductSKUToRemindMe(requestBody: $requestBody) {\n    id\n    isWatched\n    isActive\n    stocks {\n      branchId\n      isReminded\n      __typename\n    }\n    __typename\n  }\n}"
+      }
+    ])
     headers = {
       'content-type': 'application/json'
     }
@@ -43,6 +59,9 @@ def hit_api(sku) :
         # print(f"{nm_lokasi} = {stock}")
         sku_detail = {"SKU" : sku}
         product_name_dict = {nm_lokasi : stock}
+
+        if((nm_lokasi == 'Toko Jakarta Pusat') & (stock == 0)):
+          requests.request("POST", url, headers=headers, data=payloadRemindMe)
 
         data_row.update(sku_detail)
         data_row.update(product_name_dict)
@@ -67,8 +86,8 @@ SKU_Store = []
 file_name = ""
 
 if len(sys.argv) > 1:  # Memastikan ada argumen yang diberikan
-  if sys.argv[1] not in ("tiktok", "netlook", "shopee", "tourisme"): # Nama file sku
-      print("Argumen tidak valid")
+  if sys.argv[1] not in ("tiktok", "netlook", "shopee", "tourisme", "bestever", "sample"): # Nama file sku
+      print("Load Data SKU..")
       for sku_item in range(1 , len(sys.argv)):
         sku_terminal = sys.argv[sku_item]
         
