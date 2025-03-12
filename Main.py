@@ -74,6 +74,9 @@ def update_progress(progress):
 
 # export to excel
 def export_to_excel():
+  with open("dataSKU.json", "w") as fp:
+        json.dump(SKU_Store, fp)
+
   df = pd.DataFrame(SKU_Store)
   curr_time = time.strftime("%H_%M_%S", time.localtime())
   df.to_excel(f'{file_name}-{curr_time}.xlsx', index=False)
