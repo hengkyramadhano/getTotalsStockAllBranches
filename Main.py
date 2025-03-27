@@ -18,7 +18,7 @@ def hit_api(sku) :
           "items": [{"id": jejak, "quantity": 1} for jejak in sku[:100]]
         }
       },
-      "query": "mutation AllCheckoutOptions($input: CheckoutRequestInput!) {\n  getCheckoutOptions(requestBody: $input) {\n    online {\n      text\n      stores {\n        ...storesInfo\n        __typename\n      }\n      type\n      __typename\n    }\n    pickup {\n      text\n      stores {\n        ...storesInfo\n        __typename\n      }\n      type\n      __typename\n    }\n    cod {\n      text\n      isEnabled\n      disabledText\n      fees {\n        weight {\n          min\n          max\n          __typename\n        }\n        isSelected\n        fee\n        range {\n          min\n          max\n          __typename\n        }\n        __typename\n      }\n      stores {\n        ...storesInfo\n        __typename\n      }\n      type\n      __typename\n    }\n    announcements\n    __typename\n  }\n}\n\nfragment storesInfo on CheckoutStore {\n  name\n  options {\n    id\n    stockBranchId\n    isEnabled\n    isSelected\n    text\n    disabledText\n    skuList {\n      id\n      isEnabled\n      stockValue\n      price\n      subtotal\n      text\n      type\n      __typename\n    }\n    type\n    __typename\n  }\n  dropship {\n    isAllow\n    fee\n    __typename\n  }\n  warning\n  __typename\n}"
+      "query": "mutation AllCheckoutOptions($input: CheckoutRequestInput!) {\n  getCheckoutOptions(requestBody: $input) {\n    online {\n      text\n      stores {\n        ...storesInfo\n        __typename\n      }\n      type\n      __typename\n    }\n    }\n}\n\nfragment storesInfo on CheckoutStore {\n  name\n  options {\n    skuList {\n      id\n            stockValue\n      price\n      subtotal\n     }\n   }\n  }"
     })
 
     # payloadRemindMe = json.dumps([
@@ -52,10 +52,13 @@ def hit_api(sku) :
         nm_lokasi = json_response.data.getCheckoutOptions.online.stores[stockItem].name
         skuId = json_response.data.getCheckoutOptions.online.stores[stockItem].options[0].skuList[item].id
         stock = json_response.data.getCheckoutOptions.online.stores[stockItem].options[0].skuList[item].stockValue
+        price = json_response.data.getCheckoutOptions.online.stores[stockItem].options[0].skuList[item].price
       
         sku_detail = {"SKU" : skuId}
+        price_final = {"Price" : price}
         product_name_dict = {nm_lokasi : stock}
         data_row.update(sku_detail)
+        data_row.update(price_final)
         data_row.update(product_name_dict)
         
       data_list.append(data_row)
