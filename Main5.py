@@ -135,31 +135,36 @@ def validation(response, data, product_desc):
     if validation:
         print(f"Error msg: {validation}\n")
         print(f"{response.text}\n")
+        
+        if validation == "ERROR_VALIDATION":
+            
+            for bit in data:
+                response_x = hit_stock(bit)
+                json_response_x = json.loads(response_x.text, object_hook=lambda d: SimpleNamespace(**d))
+                validation_x = json_response_x[0].data.IMSUpdateProductWarehouse.header.error_code
 
-        for bit in data:
-            hit_stock(bit)
+                if validation_x:
+                    skuID = product_desc["SKU"]
+                    productID = sku_dict.get(skuID)
 
-            skuID = product_desc["SKU"]
-            productID = sku_dict.get(skuID)
+                    if skuID in sku_dict:
+                        del sku_dict[skuID]
+                        print(f"SKU '{skuID}' berhasil dihapus.")
+                    else:
+                        print(f"SKU '{skuID}' tidak ditemukan dalam mapping.")
 
-            if skuID in sku_dict:
-                del sku_dict[skuID]
-                print(f"SKU '{skuID}' berhasil dihapus.")
-            else:
-                print(f"SKU '{skuID}' tidak ditemukan dalam mapping.")
+                    file_py_path = "sku_product_mapping.py"
 
-            file_py_path = "sku_product_mapping.py"
+                    with open(file_py_path, "w") as f:
+                        f.write("sku_product_mapping = [\n")
+                        f.write("    {\n")
+                        for sku, product_id in sku_dict.items():
+                            f.write(f"        '{sku}': {product_id},\n")
+                        f.write("    }\n")
+                        f.write("]\n")
 
-            with open(file_py_path, "w") as f:
-                f.write("sku_product_mapping = [\n")
-                f.write("    {\n")
-                for sku, product_id in sku_dict.items():
-                    f.write(f"        '{sku}': {product_id},\n")
-                f.write("    }\n")
-                f.write("]\n")
-    
-            print(f"File '{file_py_path}' telah diperbarui.")
-            print(f"Deleted ProductID: {productID}")
+                    print(f"File '{file_py_path}' telah diperbarui.")
+                    print(f"Deleted ProductID: {productID}")
     
 
 def hitung_harga(B2):
