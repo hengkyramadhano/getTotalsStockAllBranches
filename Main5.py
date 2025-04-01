@@ -83,6 +83,7 @@ def update_stock(sku):
 
     # Loop melalui 2 SKU pertama dari daftar SKU
     for product_desc in sku[:count_sku]:
+        print(product_desc)
         skuID = product_desc["SKU"]
         productID = sku_dict.get(skuID)
         stockID = int(product_desc["Gudang online"]) + int(product_desc["Toko Jakarta Pusat"])
@@ -137,7 +138,7 @@ def validation(response, data, product_desc):
         print(f"{response.text}\n")
         
         if validation == "ERROR_VALIDATION":
-            
+
             for bit in data:
                 response_x = hit_stock(bit)
                 json_response_x = json.loads(response_x.text, object_hook=lambda d: SimpleNamespace(**d))

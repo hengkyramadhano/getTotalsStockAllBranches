@@ -1,39 +1,82 @@
 import requests
 import json
+from types import SimpleNamespace
+from sku_product_mapping_shopee import sku_product_mapping as shopee_mapping
 
-url = "https://gql.tokopedia.com/graphql/IMSUpdateProductWarehouse"
 
-payload = json.dumps([
-  {
-    "operationName": "IMSUpdateProductWarehouse",
-    "variables": {
-      "input": {
-        "shopID": "1217314",
-        "productWarehouse": [
-          {
-            "productID": "2231540043",
-            "warehouseID": "3983159",
-            "stock": "100"
-          },
-          {
-            "productID": "16398648609",
-            "warehouseID": "3983159",
-            "stock": "100"
-          }
-        ]
-      }
-    },
-    "query": "mutation IMSUpdateProductWarehouse($input: UpdatePWRequest!) {\n  IMSUpdateProductWarehouse(input: $input) {\n    header {\n      messages\n      reason\n      error_code\n      __typename\n    }\n    data {\n      product_id\n      warehouse_id\n      stock\n      price\n      shop_id\n      status\n      __typename\n    }\n    __typename\n  }\n}\n"
+with open("dataSKU.json", "r") as file:
+    dataSKU = json.load(file)
+
+  # for skuInfo in sku_dict:
+  #     skuID = skuInfo["SKU"]
+  #     for data_sku in dataSKU:
+  #        skuId = data_sku["SKU"]
+
+
+def getCodeVariant(productID):
+
+  url = f"https://seller.shopee.co.id/api/v3/product/get_product_info_for_quick_edit?SPC_CDS=7ed10ba2-7a4f-487d-a2d8-06ad1f95c401&SPC_CDS_VER=2&product_id={productID}&is_draft=false"
+
+  payload = {}
+  headers = {
+    'accept': 'application/json, text/plain, */*',
+    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
+    'Cookie': 'fulfillment-language=id; _QPWSDCXHZQA=7cd86e9c-b65b-4742-b81c-f404e6366d46; SPC_CDS=7ed10ba2-7a4f-487d-a2d8-06ad1f95c401; SPC_CDS_VER=2; SPC_SC_SA_TK=; SPC_SC_SA_UD=; SPC_SC_OFFLINE_TOKEN=; SC_SSO=-; SC_SSO_U=-; SPC_CDS_CHAT=d7da2afd-8bf0-431a-95e1-d3092a862d13; _sapid=78ab8b893f30f1ef2350d4fec7b3e0b30bd9ca49cf3f3036d4e12d52; REC7iLP4Q=4d91d270-320c-4756-a238-d54ddd785305; SPC_F=fxJLnEQzkCkWKrpfenKjCKspqYcRfrlK; SC_DFP=MILdziIelGBIQrJSkWGWXXmtwpvJoZke; REC_T_ID=434759fe-b525-11ef-b011-0e4ff3912761; SPC_CLIENTID=ZnhKTG5FUXprQ2tXpmarhaoxvrxhkahz; _gcl_au=1.1.1702852482.1735857676; _ga_TEVYGNDY1K=GS1.1.1736096872.2.0.1736096872.60.0.0; SPC_SI=nzFpZwAAAABua1JTc0RFMbjrOgAAAAAAWUxiZlBYaVo=; _ga_QMX630BLLS=GS1.1.1739847341.6.0.1739847341.60.0.0; web-seller-affiliate_language=id; MOCK_TYPE=; web-seller-affiliate-region=id; language=id; _ga_8TJ45E514C=GS1.1.1741709419.2.1.1741709783.60.0.0; SPC_T_IV=TWxTT0dVWWloN2p6REZHQw==; SPC_R_T_ID=ozP/f3YYXCq1oVW68Zbg7LEFBcYav5OaRh3h6WtjjGAEM6nfufZaa/2Nbdz6xysaOmdHviiiqeSNW5bH/ddYiYwkij7br5bDdmGLc+LAyhHJbFlwuCyUg452V37xghhW8p67XtT0oEoEuJ+GNQPj/s9A3gnk8XNOBvWriPgiOR4=; SPC_R_T_IV=TWxTT0dVWWloN2p6REZHQw==; SPC_T_ID=ozP/f3YYXCq1oVW68Zbg7LEFBcYav5OaRh3h6WtjjGAEM6nfufZaa/2Nbdz6xysaOmdHviiiqeSNW5bH/ddYiYwkij7br5bDdmGLc+LAyhHJbFlwuCyUg452V37xghhW8p67XtT0oEoEuJ+GNQPj/s9A3gnk8XNOBvWriPgiOR4=; SPC_SI=nzFpZwAAAABua1JTc0RFMbjrOgAAAAAAWUxiZlBYaVo=; SPC_U=-; _ga=GA1.1.1315976015.1650768788; SPC_EC=.TndPV1BNZFZXd2J6NmhSQ1E4lhyJmIZ7HjDYu7IuGVCYNBf24BeeAq0QyLmLmDt+8ZA9Oi9+B9NLuEYl5K/MOgOPayzxC38Z4v2B813h7l7kYAik3lkXPFY9ZOTpaBOXwzBJIXQqNwQ2G/BYxMFWu8Zw+Bd/oBUHF+rWHScYRaChyxGtBR/Lc9Y8yZ3gMORZil4ke+Spm4Fk2GYF0OiB6+5MzjJKCXkmaPEfN2fEcu4=; SPC_ST=.OWN3dlM4QXlMWmN5c0hBOGaCb+GHAR2H9gOD1x/Geze6oP9pBkkBicVXUFLGp3aY6q9R+hDiGY6ID0N0WmdVo2vNQ/wup9R6vMZN+D93+VYsbdnmQ3/najEZhaJfqjxDruMnK8uBIvFcRwQDGcDW0wq++qxh4elRLaAEOV8aI+hTrbxE3JDEC/9CoDI/sj+CFOC9y34+QwiN6whR6Yhr3wAi0sszM+IbeYK65Zt6uPQ=; _ga_SW6D8G0HXK=GS1.1.1743305193.244.1.1743305849.14.0.0; SPC_SC_SESSION=gYD6ZNsDWv6cKXTX3KVswsmB3HbWQ4LuUf+VGRyxT8Srmb+FPd8hpaetIFIUoliBsHLXOb5jzJ0XNibU9DrlB7+6++hGyRGw3EVWpKArgTt3RLIWa5piK3jmGZJXBAjEPtrOlJ/dF1VN2317scrcyuZwmAo6D39h5FbMGY9P7UxRUqlot98pDiKZZDKJ97ghxhHJwHU5yQ5BOtbhRnS0i+gfCyFH/Tk4eyJbpm8zaiLoOcNAUeAVAWHwsM9iCuF/A_1_51605901; SPC_STK=mfhEIfaN11Y1LQBllBrmtgw029BlsMmxcUoaopwWuUJzU/xylh2r4Yj2ffvGfjLdzCqY1xYYCwmvRCxrL21XPu2zfLTK/sNndKsBXobMMPruLb42GTWeC2AH55eoBzkAp527W5zpDIk75wd5VMCrx65Npc3iD8/1g+Rws1e50Xbb78dgh8WriJ2BBxPDT1cu5fYWky8hIFSvrmM4FsQOzmYszNPrXNz/q/zEzKbWZiotcwn2LnOBtVuB76WUA40FI8pyRkGiNmCW761nCCusxejZTTzg9fuhRu61VHR/hg6lIUbeTtoIpX8Tj9T6O6u+GxDon9BR0nj6okajeA5CTV0ucsP1CM6MjdhbnzmSae37KRpYN1vXINjZ1Df9YplKlXs3/kEjR/KkTG7TKpbMaHKJfxief77NWieXVhKX6qGpk7UlZfz/qVnX/MAYe4LOIVEVlfUNnGMwmdYscFZwyg==; SPC_SEC_SI=v1-VUFYYnRDY2RkdFhuTHk4RNRXbkyqmYaQRiYOXn75oddmzhN7251tSxeFl/n9f5nwJoSm31td/bk6TBJpJKj/EZQymU+n/yYW28ka0eLIvNE=; CTOKEN=wJsM4Q4jEfCJXiLuVlUgww%3D%3D; shopee_webUnique_ccd=6y9x5lLXGeYx%2BUnwgm7t8g%3D%3D%7C4vkUtnnBfUT%2BJv1aVs3v7WG6bsLnGjLpbz2R6%2FrHe0SRXA6b5O7k3t6d0fauWq%2FoH4EUchI88sA%3D%7Cy5v0YTgCsBReNpj2%7C08%7C3; ds=c57d5bf2c3a076de7c9266ea20eb6ac8'
   }
-])
-headers = {
-  'accept': '*/*',
-  'accept-language': 'en-US,en;q=0.9',
-  'content-type': 'application/json',
-  'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
-  'Cookie': '_gcl_au=1.1.539197710.1737153251; _SID_Tokopedia_=DgZznGiWRuyvbARUAE0J__WlgbyKj9ME5B_k8nzf0aRyM7DuU1MNOuqyHLiqb1f__XxmATxSM70ppfYmEyoyEC0gR6z1sSPtnQUUr4dEXOZsJSvk_qvCzUEXDKyamOuc; DID=f35e6a74d34432de76e946a1b8d622f2d013de95f140fd2b546ef5123c5b112751e43c015599c3e31369252cb015530a; DID_JS=ZjM1ZTZhNzRkMzQ0MzJkZTc2ZTk0NmExYjhkNjIyZjJkMDEzZGU5NWYxNDBmZDJiNTQ2ZWY1MTIzYzViMTEyNzUxZTQzYzAxNTU5OWMzZTMxMzY5MjUyY2IwMTU1MzBh47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=; _gid=GA1.2.770516540.1737153252; _m4b_theme_=new; passport_csrf_token=3189238bce85cf75d2790b298a5588f2; passport_csrf_token_default=3189238bce85cf75d2790b298a5588f2; _tt_enable_cookie=1; _ttp=4ZBz64Q1TLvgg1vg88zeqvF_5af.tt.1; l=1; tkpd-x-device=undefined; TOPATK=aYIJ4AVuRnGHuKVUx6B9aw; tuid=9750787; gec_id=41879311275278016; uidh=RhWo18PlN3JqrRc7TpBCkyhHmwkIqcCVC7A06t0P0Rk=; FPF=1; uide=NgJsvqoXt9raEZRTboHWLu5sczzZk6n6Rh0jYTe0oIETUaU=; aus=1; _CASE_=7f26654d60263e263534333d373d373133262826674d60263e3533322826604d60263e36363c34282668517460263e263634363129343529353c5034313e37323e36372f34333e3434262826686570263e2629322a353d3d343430323031373237373237262826686668263e26567169656c244c616a636f7d2456656965606c656a6b262826686b6a63263e263534322a3c353737303c313235323c313d3c26282674476b263e263534363734262826774d60263e3535313734313337282677507d7461263e266b6b67262826734d60263e342826736c77263e265f59262826736c7777263e265f592679; _UUID_CAS_=f962959f-e3cd-42bd-9ba6-bf31aad3cc55; sid_guard=02db8819c7876e956915fff56645b9e0%7C1737153953%7C5184000%7CTue%2C+18-Mar-2025+22%3A45%3A53+GMT; uid_tt=22173ea23a778455613bf79c1ace976d62a1109df751f8efc3e502d1ce00922e; uid_tt_ss=22173ea23a778455613bf79c1ace976d62a1109df751f8efc3e502d1ce00922e; sid_tt=02db8819c7876e956915fff56645b9e0; sessionid=02db8819c7876e956915fff56645b9e0; sessionid_ss=02db8819c7876e956915fff56645b9e0; sid_ucp_v1=1.0.0-KDMwYjU0ZmZkYjA2NDg1MDg5ZThmNzFkM2Y1MDI1MmMxNmNhMmExYjAKFQiBiMicismvl2IQoburvAYY5B8gDBADGgNzZzEiIDAyZGI4ODE5Yzc4NzZlOTU2OTE1ZmZmNTY2NDViOWUw; ssid_ucp_v1=1.0.0-KDMwYjU0ZmZkYjA2NDg1MDg5ZThmNzFkM2Y1MDI1MmMxNmNhMmExYjAKFQiBiMicismvl2IQoburvAYY5B8gDBADGgNzZzEiIDAyZGI4ODE5Yzc4NzZlOTU2OTE1ZmZmNTY2NDViOWUw; SHOP_ID=7159823510867624197; _UUID_NONLOGIN_=c1ae988af60ede2456c46903a000f545; _UUID_NONLOGIN_.sig=JtamP3amAeuhbTKnKGcVM-2X6V4; tt_ticket_guard_client_web_domain=2; msToken=Amo7zxo7e0M2Smli7L-jw32EruNU7LXD_Z7Mrw4VK9lFwdJ_TSolf55M5PY9fzMs9GFqabXPd5f52irqrTDdzUlVppBmEVzP8RHatXTQfrThVKNRkewmylZq1HASbw==; NR_SID=NRm7vgikrle2y3ob; odin_tt=4199bfce3cdc371ed7e018a311bd256844d6131c75e5204fa591472dbcc5349cf967d276571195079d606aac04757183a4fd753e6f4bde2d51639f3379398dd3; webauthn-session=18956f14-b898-4b1d-a605-fd336f603855; ttwid=1%7CJ3jKqxWY6mjoyPgXgY9IcVt3a2fAo7kb7xDBiaybxKg%7C1741728988%7Ce3b91a770a987c454a43511f4b4a211d8fb4e02de632f15842dcf9023a3fbb1b; tt_ticket_guard_client_data=eyJ0dC10aWNrZXQtZ3VhcmQtdmVyc2lvbiI6MiwidHQtdGlja2V0LWd1YXJkLWl0ZXJhdGlvbi12ZXJzaW9uIjoxLCJ0dC10aWNrZXQtZ3VhcmQtcHVibGljLWtleSI6IkJLdHdBOE80N3lIeGdhVzdudFpRZWtuTnExMWRDVURBR1g1Q0RjWlVzUzlqNEpZSkxqOGRENzM3a2VLbG1LTlFjSXFremJKekd6eFppWWZSSWY4T04vRT0iLCJ0dC10aWNrZXQtZ3VhcmQtd2ViLXZlcnNpb24iOjF9; _ga_BZBQ2QHQSP=GS1.1.1741728987.408.1.1741729153.0.0.902213938; bm_sz=A7865ADCBF802104DD4C90CA535E449F~YAAQfIM0Fy8otYGVAQAA0dwmhxsj6m43Ja7LRrlyNLH7nT//SdevpFaK8LWJvc9DOCYzXvcxvEJjZfpb5vdLXxIjzRrtETLCnXQ/NWjibEt3Wof34YpZt9dXfig4KXrrjygplyLeKbNVlezoOhFvxLO9b7mzwd2+Y3XAmwFnw5JO3hG/d8inIswtatO9xa+jK3f7yGUoctt14wt2/PqfqQsdtPxoqMutaBukkvuPpstLHqngU4IAGgO7t1b2czNB/yJYZTDA4P/tkJfdnuqsyuLetgqR5N1OqoZpYuHg0xTVBC/uxD+Y0bq3cfbQvJ/8nzNQwaasYVZF3mDZZi6O+V85ZVf7WP71l6kkZ4uj3ypZXg/BE2d7ENA=~3355955~4342066; _abck=0EA40FD265B0F7C1F12392FA329A5E6B~0~YAAQvgMKctdHJH+VAQAAcvFbhw0ZWYptpPkCT5E1vHp/KV+IhxeVNGA7EnomWC7QK1hXkLJ4EJsJi5GiuDDaT1RSUmKr5T5U5CC4KSe710JZO/nn89dgtxqZnkrhRFvqUrTtOZrG+is8+hB3EpQravM0eH0VsXNLEg6ZHg0YG1kmWGAk30r8ZUPT+vMVakmDCqWlfTYpDV0NRge626GodwjJgxFimfonp2NRCnJYQUW21XUtKSx6yFC9tdXCh1MrX5UCGzXKMSxf6BI2Tlk17sn0Oob8D1XmTwIvqYgKVqRwcLDjV+lsTDB03KcNv/DLNUdn6PS4i+hl+Sd4SluzI69tIXmxYo+gaB7qQp60fMMXjvlGSZIg9RPq6fP01gBCDiPWWuxapR3YAR+bhseXupyUPLwSi69wdKdHQrab3lKjeFNPRgkEJJVQleLbc7CtOojEyvYbDyPssWGBNLjGvfmSHR761kV7jm2AyB54cFn1BsxUWH3KHtr6xFOVn0LNh/ULiR8sw0DIdaNm506xixfEuMLiNlHzX7UU2KTULXi+aH+S0gSY6hn/rBPOAT6xB4hlJ9W7usBVf3rEZ7O4MiL2VknRasIsCz9p4SHs2t27lK7srIKodlyqxTW47AW3DlknfmZBA7ya6ihp3usb6gD8XL9xBIqbfSnp932K40g0EbGUMt4rtwuivS5fzZ24Zp8SZGUt/zLEYSPxEZcpx7d5tXsP~-1~-1~-1; ISID=%7B%22seller.tokopedia.com%22%3A%22c2VsbGVyLnRva29wZWRpYS5jb20%3D.8549e6c8dfb844e9d8f3295bf949b026.1741732575052.1741732575052.1741732705046.2%22%2C%22www.tokopedia.com%22%3A%22d3d3LnRva29wZWRpYS5jb20%3D.890d82aaebb164424abfe5b7703bd3fd.1736894883041.1736894883041.1741364892515.57%22%2C%22ta.tokopedia.com%22%3A%22dGEudG9rb3BlZGlhLmNvbQ%3D%3D.85360aba72966460c8fe09a0c732e71b.1722846026421.1722846026421.1725266756057.4%22%2C%22accounts.tokopedia.com%22%3A%22YWNjb3VudHMudG9rb3BlZGlhLmNvbQ%3D%3D.8d929a09be2e34e9a88386a4da843228.1724329072491.1724329072491.1735526121849.3%22%2C%22developer.tokopedia.com%22%3A%22ZGV2ZWxvcGVyLnRva29wZWRpYS5jb20%3D.8283dc0b5157842ea98b25873ac43dfc.1740826555742.1740826555742.1740826555742.1%22%7D; _ga_70947XW48P=GS1.1.1741732484.475.1.1741732705.59.0.0; _ga=GA1.1.18400375.1737153251; _abck=0EA40FD265B0F7C1F12392FA329A5E6B~-1~YAAQboM0F7dKOIqVAQAAcsV0iw1AsOqptX0HG5tGEmjh2R1nr6jil59lZ5fhnG0XprQ3GkuHFi+H3oP2y4gvizTzKTX2d1RMiBD/9MEB7C8h6ty6wsElzt8+7Yhzdn9gWWknhtp8memUJAZlAHHxLEHhTy5zAG4k6MXBaJri5X4TnR3QmFLKr4Pg7rZKBizT48YyBNOv4hNPw7rsxbUwFXhyrN/CF3W7Wx4C8YwCv9HT658yZ37qUnYhdXCd9CVXg5Bt6b9mEcBbLN3JtpGmySuHGvD1MLHTzpHKIyQuBiFlQqlBUHOtMDYWAUPwrBq9YQdtS6CpPr310QmQN8bFm2chgcrH8MI5Kw1n6bbg4RZgY7aK2w6R31c/GzUIoQZiGcJUxlCbUE+IMVf8J8vJ6OQBCd1VMsvepABjYp6Vy+UoeqqRam+hD6PsSYyAzYlP68qE1iXiDN3ZAHPw5dlnpOucicuwj4UHkPzqsipfuNI4ge94PrplEkEnKVcwb3HnNNXRLS3OH6XJlLcc6iFkhAgVWnye3S7ddZrJTeJgCCa95GYF6uGDFaS483Lu8NkPS/pM64CaOcWOoSEDaRIY4kH8VBtdc0wpVbmi5On+PkdviZip39MGIeCrM3eE42qVJNzrnNVZZYATPSahRmzeMGKtVYYekMB3sDaU65AwYD9G59zALmfuL1WDGQ==~0~-1~-1'
-}
 
-response = requests.request("POST", url, headers=headers, data=payload)
+  response = requests.request("GET", url, headers=headers, data=payload)
 
-print(response.text)
+  json_response = json.loads(response.text)
+  # data = json_response.data.stock_list[0].model_stock_list[0].model_id
+  # print(json_response)
+
+  # Mengakses model_stock_list secara dinamis
+  stock_list = json_response.get("data", {}).get("product_info", {})
+  model_stock_list = stock_list.get("model_list", [])
+
+  for model in model_stock_list:
+    variantID = model.get("id")
+    skuID = model.get("sku")
+    getInfo(productID, skuID, variantID)
+    # print(variantID, skuID)
+
+def getInfo(product, sku, variant):
+   
+   sku_dict = {item["SKU"]: item for item in dataSKU}
+   item = sku_dict.get(sku, {})
+   total_stock = item.get("Gudang online", 0) + item.get("Toko Jakarta Pusat", 0)
+
+   postUpdate(product, variant, total_stock)
+   print(f"Stok {sku}: {total_stock}")
+
+def postUpdate(productID, variantID, stock):
+
+  url = "https://seller.shopee.co.id/api/v3/product/update_product_info_for_quick_edit?SPC_CDS=7ed10ba2-7a4f-487d-a2d8-06ad1f95c401&SPC_CDS_VER=2"
+
+  payload = f"""{{
+    "product_id": {productID},
+    "product_info": {{
+        "model_list": [{{
+            "id": {variantID},
+            "stock_setting_list": [{{
+                "location_id": "IDZ",
+                "sellable_stock": {stock}
+            }}]
+        }}]
+    }}
+}}"""
+  headers = {
+    'accept': 'application/json, text/plain, */*',
+    'accept-language': 'en-US,en;q=0.9',
+    'content-type': 'application/json;charset=UTF-8',
+    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
+    'Cookie': 'fulfillment-language=id; _QPWSDCXHZQA=7cd86e9c-b65b-4742-b81c-f404e6366d46; SPC_CDS=7ed10ba2-7a4f-487d-a2d8-06ad1f95c401; SPC_CDS_VER=2; SPC_SC_SA_TK=; SPC_SC_SA_UD=; SPC_SC_OFFLINE_TOKEN=; SC_SSO=-; SC_SSO_U=-; SPC_CDS_CHAT=d7da2afd-8bf0-431a-95e1-d3092a862d13; _sapid=78ab8b893f30f1ef2350d4fec7b3e0b30bd9ca49cf3f3036d4e12d52; REC7iLP4Q=4d91d270-320c-4756-a238-d54ddd785305; SPC_F=fxJLnEQzkCkWKrpfenKjCKspqYcRfrlK; SC_DFP=MILdziIelGBIQrJSkWGWXXmtwpvJoZke; REC_T_ID=434759fe-b525-11ef-b011-0e4ff3912761; SPC_CLIENTID=ZnhKTG5FUXprQ2tXpmarhaoxvrxhkahz; _gcl_au=1.1.1702852482.1735857676; _ga_TEVYGNDY1K=GS1.1.1736096872.2.0.1736096872.60.0.0; SPC_SI=nzFpZwAAAABua1JTc0RFMbjrOgAAAAAAWUxiZlBYaVo=; _ga_QMX630BLLS=GS1.1.1739847341.6.0.1739847341.60.0.0; web-seller-affiliate_language=id; MOCK_TYPE=; web-seller-affiliate-region=id; language=id; _med=affiliates; _ga_8TJ45E514C=GS1.1.1741709419.2.1.1741709783.60.0.0; SPC_T_IV=TWxTT0dVWWloN2p6REZHQw==; SPC_R_T_ID=ozP/f3YYXCq1oVW68Zbg7LEFBcYav5OaRh3h6WtjjGAEM6nfufZaa/2Nbdz6xysaOmdHviiiqeSNW5bH/ddYiYwkij7br5bDdmGLc+LAyhHJbFlwuCyUg452V37xghhW8p67XtT0oEoEuJ+GNQPj/s9A3gnk8XNOBvWriPgiOR4=; SPC_R_T_IV=TWxTT0dVWWloN2p6REZHQw==; SPC_T_ID=ozP/f3YYXCq1oVW68Zbg7LEFBcYav5OaRh3h6WtjjGAEM6nfufZaa/2Nbdz6xysaOmdHviiiqeSNW5bH/ddYiYwkij7br5bDdmGLc+LAyhHJbFlwuCyUg452V37xghhW8p67XtT0oEoEuJ+GNQPj/s9A3gnk8XNOBvWriPgiOR4=; SPC_SI=nzFpZwAAAABua1JTc0RFMbjrOgAAAAAAWUxiZlBYaVo=; SPC_SEC_SI=v1-N0NqM3VQMFJYbEZPbEJvcob7S3QeSRY3QL5e3KYIE1G7eidk374BgkL+g4uzwpKSOYUZEhdBMEP7hZ80ijKJyE+iBu+1CssefSTGvCPqD6k=; _gid=GA1.3.550010525.1743305194; SPC_U=-; _ga=GA1.1.1315976015.1650768788; SPC_EC=.TndPV1BNZFZXd2J6NmhSQ1E4lhyJmIZ7HjDYu7IuGVCYNBf24BeeAq0QyLmLmDt+8ZA9Oi9+B9NLuEYl5K/MOgOPayzxC38Z4v2B813h7l7kYAik3lkXPFY9ZOTpaBOXwzBJIXQqNwQ2G/BYxMFWu8Zw+Bd/oBUHF+rWHScYRaChyxGtBR/Lc9Y8yZ3gMORZil4ke+Spm4Fk2GYF0OiB6+5MzjJKCXkmaPEfN2fEcu4=; SPC_ST=.OWN3dlM4QXlMWmN5c0hBOGaCb+GHAR2H9gOD1x/Geze6oP9pBkkBicVXUFLGp3aY6q9R+hDiGY6ID0N0WmdVo2vNQ/wup9R6vMZN+D93+VYsbdnmQ3/najEZhaJfqjxDruMnK8uBIvFcRwQDGcDW0wq++qxh4elRLaAEOV8aI+hTrbxE3JDEC/9CoDI/sj+CFOC9y34+QwiN6whR6Yhr3wAi0sszM+IbeYK65Zt6uPQ=; _ga_SW6D8G0HXK=GS1.1.1743305193.244.1.1743305849.14.0.0; SPC_SC_SESSION=gYD6ZNsDWv6cKXTX3KVswsmB3HbWQ4LuUf+VGRyxT8Srmb+FPd8hpaetIFIUoliBsHLXOb5jzJ0XNibU9DrlB7+6++hGyRGw3EVWpKArgTt3RLIWa5piK3jmGZJXBAjEPtrOlJ/dF1VN2317scrcyuZwmAo6D39h5FbMGY9P7UxRUqlot98pDiKZZDKJ97ghxhHJwHU5yQ5BOtbhRnS0i+gfCyFH/Tk4eyJbpm8zaiLoOcNAUeAVAWHwsM9iCuF/A_1_51605901; SPC_STK=mfhEIfaN11Y1LQBllBrmtgw029BlsMmxcUoaopwWuUJzU/xylh2r4Yj2ffvGfjLdzCqY1xYYCwmvRCxrL21XPu2zfLTK/sNndKsBXobMMPruLb42GTWeC2AH55eoBzkAp527W5zpDIk75wd5VMCrx65Npc3iD8/1g+Rws1e50Xbb78dgh8WriJ2BBxPDT1cu5fYWky8hIFSvrmM4FsQOzmYszNPrXNz/q/zEzKbWZiotcwn2LnOBtVuB76WUA40FI8pyRkGiNmCW761nCCusxejZTTzg9fuhRu61VHR/hg6lIUbeTtoIpX8Tj9T6O6u+GxDon9BR0nj6okajeA5CTV0ucsP1CM6MjdhbnzmSae37KRpYN1vXINjZ1Df9YplKlXs3/kEjR/KkTG7TKpbMaHKJfxief77NWieXVhKX6qGpk7UlZfz/qVnX/MAYe4LOIVEVlfUNnGMwmdYscFZwyg==; CTOKEN=T6O9gA0YEfCjrGqvVJkgng%3D%3D; shopee_webUnique_ccd=Lvjrzw39qf%2FxeE3jMRx1AQ%3D%3D%7C2%2FkUtnnBfUT%2BJv1aVs3v7WG6bsLnGjLpbz2R66C2okqRXA6b5O7k3t6d0fauWq%2FoH4EUchI88sDgHJHsEpM%3D%7Cy5v0YTgCsBReNpj2%7C08%7C3; ds=edc3bdfa3e4581eba8e4c7aec5e8bc26; SPC_EC=.UHgxem9oVDF6MFV1S1UyTsDQZBnPbb7O/TNABFAwP8xUx75XZirRb+AgaZl3g6ISki/D7EeYW/ivWwvzeCmBH6k/M1dGM8zyFUXUAEyQy/GcqPbDcZIKQmk3mo8t4LcmkiU3MRjO9ICNVqQZZysWqSP8MLTAxGAal+8kYWLEPtO9Qdm4KVmcBlra2kTYNGJLFqjsl0ZKidf2PLhSZWWYjOcrfEbIkGK04RXw5neCFNA=; SPC_R_T_ID=ozP/f3YYXCq1oVW68Zbg7LEFBcYav5OaRh3h6WtjjGAEM6nfufZaa/2Nbdz6xysaOmdHviiiqeSNW5bH/ddYiYwkij7br5bDdmGLc+LAyhHJbFlwuCyUg452V37xghhW8p67XtT0oEoEuJ+GNQPj/s9A3gnk8XNOBvWriPgiOR4=; SPC_R_T_IV=TWxTT0dVWWloN2p6REZHQw==; SPC_SI=nzFpZwAAAABua1JTc0RFMbjrOgAAAAAAWUxiZlBYaVo=; SPC_ST=.Skt1RVVmRUFkN3pPaDhmNU68pVOEOL7uky8BEHqg69Zjz3rrJzgrG/+rMAY3tU/yNlUNM/5LuJbXZepypsDFYf7LllO/b5GWxI20Qg90wk2PKDz+IQLGC+NueFvZvtomcRWRLpHIX8Va/tmdXffcbwYJ9dVcUBdNnbgpIMipLgHvmkq8yfc3qQhLdf9SuYr45uSXuYjyCMgfV2JUchjd7UP7OLDzO0BAv5KnEApIr+Q=; SPC_T_ID=ozP/f3YYXCq1oVW68Zbg7LEFBcYav5OaRh3h6WtjjGAEM6nfufZaa/2Nbdz6xysaOmdHviiiqeSNW5bH/ddYiYwkij7br5bDdmGLc+LAyhHJbFlwuCyUg452V37xghhW8p67XtT0oEoEuJ+GNQPj/s9A3gnk8XNOBvWriPgiOR4=; SPC_T_IV=TWxTT0dVWWloN2p6REZHQw==; SPC_SEC_SI=v1-R2N0MndpT09oRUhkNll5cO41R+8wJ98sgbCVbvA4QwKKQFVkYvQsBX4ZSMiSWx9xIbjpR2GOVjNylH8t/5yggpj9YHgwoljOqmHWszz8qrI=; SPC_SI=nzFpZwAAAABua1JTc0RFMbjrOgAAAAAAWUxiZlBYaVo='
+  }
+
+  response = requests.request("POST", url, headers=headers, data=payload)
+
+  print(response.text)
+
+
+for code in shopee_mapping:
+   getCodeVariant(code)

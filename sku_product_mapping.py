@@ -20,7 +20,7 @@ sku_product_mapping = [
         'OMSK66BK': 1858965304,
         'OMSK66WH': 1641744622,
         'OMCA2EBK': 1954047841,
-        'JN7RHZJ7WH': 1919702006,
+        '7RHZJ7WH': 1919702006,
         'JN7RHZD3WH': 13104180332,
         'APIPCEBK': 1934967599,
         'APIPCEWH': 1934967600,
@@ -1055,7 +1055,6 @@ sku_product_mapping = [
         '7RRS7GSV': 12432561567,
         '7RRS7GBK': 16016724343,
         '7RRS7GWH': 16016724344,
-        '7RRSL6ME': 16354337421,
         '7RRS2RBK': 7448378046,
         '7RRS2RSV': 7448378049,
         '7RRS2RWH': 7448378047,
@@ -7813,5 +7812,8 @@ sku_product_mapping = [
         'OMRS7SBK': 15999854636,
         '7ROR0TGY': 15954234343,
         '7CIM02TP': 8349164717,
+        '7RRSL6CS': 16524378259,
+        '7RRSL6GB': 16524378258,
+        '7RRSL6ME': 16524378260
     }
 ]
