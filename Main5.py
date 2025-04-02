@@ -3,7 +3,6 @@ import json
 import math
 import sys
 import argparse
-from types import SimpleNamespace
 
 # Import SKU mapping berdasarkan kelompok
 from sku_product_mapping import sku_product_mapping as jaknet_mapping
@@ -70,11 +69,6 @@ shop_id = group_data["shop_id"]
 cookie_value = group_data["cookie"]
 
 
-# COUNT_SKU = 50
-# WAREHOUSE_ID = "7800575" # 3983159-Jaknet 4906536-Eldas 9617877-Bestever 7800575-katniss
-# SHOP_ID = "7593019" # 1217314-Jaknet 710735-Eldas 9295598-Bestever 7593019-katniss
-# COOKIE = '_SID_Tokopedia_=dFEy6oYPsJoJDe-kpih7MhQRlv_6FByI_J0PfD2OZlvLHUwT7X20xJlYYDCfbwwgMNo29M1DouMnmQabLhPHYtOmp_OGxrsZ17ObEGkCNwjEiuMIELE9MA0htK-t1mes; _UUID_CAS_=e41678f3-6f34-4fc3-bd16-29354a3fbdc5; l=1; aus=1; d_ticket=ca950e6255c6e2e2139f942b4cf323597e0e5; _UUID_NONLOGIN_=8bd0bc0983fa7e3950970405c7eb3d9e; _UUID_NONLOGIN_.sig=_YhaFjBS2lRlOQIOFdVQlPJ5u_g; tuid=86247457; DID_JS=ZWU4MzM1N2UzNmY1ZWU2MDNhYjgwMzlmYTFiOTdlNjgyYzg0ODY4NWE1OTg0ZmEzNWQwODk2YjVjMmJiZGM5NjQyM2I0ZjNjNDc0MjliNWVhOGFlNDQ4YTFiYmM4MjM547DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=; _CASE_=7e27614c61273f37373d352927644c61273f3435353d3d353d353c2927696769273f27577068646d25446b60696425566075716c606b6c255f70696e6c63696c272927664c61273f3432332927696a6b62273f273435332b3d3436373d3337272927696471273f2728332b343c3c37323c32353535353535353427292775466a273f273435373635272927724c61273f343631353636323d2927764c61273f3434303635303236292776517c7560273f27376d272927726d76273f275e7e5927726477606d6a7076605a6c6159273f343631353636323d295927766077736c66605a717c756059273f5927376d59272959275a5a717c75606b64686059273f5927526477606d6a707660765927785827292769507561273f27373537312835372834325134333f30323f37372e35323f35352778; _m4b_theme_=new; _fbp=fb.1.1714199581860.14608332; SHOP_ID=7151798086795329798; _ga_W44EJN0C49=GS1.1.1717927239.1.1.1717927476.0.0.0; _tt_enable_cookie=1; gec_id=370430007178182336; _ttp=6E0XmEcTLaFng_JKQ6y6wL4PKyi.tt.1; _uetvid=bbef5cf02d6211ef95e6dd5334b449f5; DID=fdb9277ac126ffc1cde7cba2fbb2d5120f9143a69d5c7c82b9ff3d415c731cca822e6f36f88cf71c4f4025ef25720937; passport_csrf_token=ef37172a623cae3cc2dfc49c45e27d78; passport_csrf_token_default=ef37172a623cae3cc2dfc49c45e27d78; odin_tt=11760018fa25787581f69ffd3c48a81fc3f92b84513d08e64190d897fa07569471e0f2d5a7cc755bb438b144098f0ea54c1204155e95279ef73ed49abbf7ca73; sid_guard=d3e1e6a59c5eabaa5387c0dd73d37945%7C1738740241%7C5184000%7CSun%2C+06-Apr-2025+07%3A24%3A01+GMT; uid_tt=6846865b8774d132a5344c87da2ecc4a679c8a40877e8d50b80b48d20331adfd; uid_tt_ss=6846865b8774d132a5344c87da2ecc4a679c8a40877e8d50b80b48d20331adfd; sid_tt=d3e1e6a59c5eabaa5387c0dd73d37945; sessionid=d3e1e6a59c5eabaa5387c0dd73d37945; sessionid_ss=d3e1e6a59c5eabaa5387c0dd73d37945; sid_ucp_v1=1.0.0-KGMwYTkxYWFjYTliYzRjZjNiN2Q5OGQzODk0MGI2ZWJmMzAwMGYxZWYKFQiBiJSchqaNkGMQkaSMvQYY5B8gDBADGgNzZzEiIGQzZTFlNmE1OWM1ZWFiYWE1Mzg3YzBkZDczZDM3OTQ1; ssid_ucp_v1=1.0.0-KGMwYTkxYWFjYTliYzRjZjNiN2Q5OGQzODk0MGI2ZWJmMzAwMGYxZWYKFQiBiJSchqaNkGMQkaSMvQYY5B8gDBADGgNzZzEiIGQzZTFlNmE1OWM1ZWFiYWE1Mzg3YzBkZDczZDM3OTQ1; tt_ticket_guard_client_web_domain=2; _gcl_au=1.1.590588929.1739698171; NR_SID=NRm85tatcyt4srs; webauthn-session=d61b811c-984e-46bb-b3d1-786ef661babd; ttwid=1%7Cn53irPMuvl1mmH24zpXm1f04JmJnpGkGqrtcQ4gKCys%7C1742038327%7C4765d2fde798061de12745dfda704202d062e7f1289036c8e4dc82915126ff06; tt_ticket_guard_client_data=eyJ0dC10aWNrZXQtZ3VhcmQtdmVyc2lvbiI6MiwidHQtdGlja2V0LWd1YXJkLWl0ZXJhdGlvbi12ZXJzaW9uIjoxLCJ0dC10aWNrZXQtZ3VhcmQtcHVibGljLWtleSI6IkJET3I2ZWg1VmhNM2phaSt2YUR1M1BJRkkwL205dTNwV1BIdnlkb1lQK0Q3RnhkeWd0eWJCaU84K0pIQVkzMU85UEhpNjNJWjQyc3YyeFJMQ0FhbXozOD0iLCJ0dC10aWNrZXQtZ3VhcmQtd2ViLXZlcnNpb24iOjF9; _ga_BZBQ2QHQSP=GS1.1.1742038332.266.1.1742038398.0.0.544409451; _abck=F365B3D50C17D434D8FDF036D27D033B~0~YAAQvgMKcuJpb4mVAQAAvubHmQ0eDjK+jwzf8X/z1dFckiiRszyFSZzq1kRYBdBsAzAghPMjuhhnzkX12TxLWQd/Re5ka92wOAbhtD2GptZCTWLVuLA6QdftgB19CGwKifTt8FPEgHCW83l6kRmqXAq575e+HwviEGrbAWEKG6gFe8nZMo8hcx3ofJveQpZPFzkewKXYTzZb+sNagg0mkiXmQBbru4qKNwDknMwp8aNJMg/+A4QYQn5TPTAGvhensuuXuI5kNuTJn3bHdIc0l/KTlJCIDIiU2U43hQCy5H+pLLlmMAcOiV6tGCXC/twB5xjF5o8lX2IvJFoavCj1280dlBi2ZEscdCLe4xqK1bcL7FQ6TIiIKr7BGS3mehvPG9S+ktr0vDK7KltRbuN8JWV68HUFYqJLr2k6bCdC1Ae6T+yEIU4Y0Z2gp9C+FsnXAbAJhbrVRK5cz5NiYscQzAp4Dx3pQ5yaRqasdd0VBkjy6crDEaDCyU8qcT0pEMDYGG7ENF2WTmqT0t70rlRBj+EZvgmDYimAxlL4Ip/teydJ+M6OILSzY/gzEXWqwfDQbRw5aoGneqZ5xqL/xLTuq+8TID9/b5O51p47sSQehcY93zb2odNfvBvVObPyWrca6hcMuQ126Nu9S6CXc54TRRzyFA5i+DLOTVpPZfBXqsFzbm8MXEqUCc/JUaJLHdbAU8hWPzYD7/xJfnZFauEXSbMXYB3mOGQH7zIwcvZsb7UQDAKh4QEyfeti/apOHfo=~-1~-1~-1; _gid=GA1.2.180253002.1742041771; ISID=%7B%22seller.tokopedia.com%22%3A%22c2VsbGVyLnRva29wZWRpYS5jb20%3D.803f0747f9bf04aa1bf3f52415ac554c.1742050033045.1742050033045.1742055728029.3%22%2C%22ta.tokopedia.com%22%3A%22dGEudG9rb3BlZGlhLmNvbQ%3D%3D.88c4daa8ca38b40bb8f9defb833d1869.1708163833829.1708163833829.1708163835466.1%22%2C%22www.tokopedia.com%22%3A%22d3d3LnRva29wZWRpYS5jb20%3D.8e43332919e3f40fcade7d7fb248aa71.1708163838539.1708163838539.1741785166415.45%22%7D; uidh=KDQPGcdjIr3kXQ9RQBlCRQlKCzW4hDk2Fu75GoQusng=; uide=EC6+BOa2VFpEegjoQ4jyr9knG4Uno8AubvGl8rLH4u8PSskc; bm_sz=C992038EBB1C0EAE9FC568C20119222C~YAAQ1czbF4zhWY+VAQAA++ScmhtdD7ehFH3RfyyBApIjhok6soa6Tf+iSd5v5kpwmxuAdOeruk8DcTbgsMzJ7OeifZ9dxMmaur5TQE4HX0xfS4zV4YhZQuuGPz5cK1UJle0HDIvq45o+i4e5WcyJROB3fEzengdWIIiFYUKnxNXXPIgnHRPxfAQY+OfYcLnoKmdPseFl7gSh7QOpSqJcCtwyXaD8udNUDI+PVNKE7hM9Id4PaCpT+ZCPnEFhoz9kcWM9TjS8hQfhqNN2bbbDDZ1sjBGtXFqdZKlUC5+EFKnSo33cbG67hflRxea9928tLQ893jNZKhlJkmT38qtFD4xRZpcQ/OMuAs0VEWLJoGOxzjW3KGqIBexnGF5QgPva1URXQVYZLLlXVePaX6vlNlc=~3355191~3555891; _ga=GA1.2.1769629206.1651639407; _ga_70947XW48P=GS1.1.1742055728.844.1.1742055766.22.0.0'
-
 def update_stock(sku):
 
     # Inisialisasi productWarehouse
@@ -83,7 +77,6 @@ def update_stock(sku):
 
     # Loop melalui 2 SKU pertama dari daftar SKU
     for product_desc in sku[:count_sku]:
-        print(product_desc)
         skuID = product_desc["SKU"]
         productID = sku_dict.get(skuID)
         stockID = int(product_desc["Gudang online"]) + int(product_desc["Toko Jakarta Pusat"])
@@ -130,8 +123,8 @@ def hit_stock(data):
     return response
 
 def validation(response, data, product_desc):
-    json_response = json.loads(response.text, object_hook=lambda d: SimpleNamespace(**d))
-    validation = json_response[0].data.IMSUpdateProductWarehouse.header.error_code
+    json_response = json.loads(response.text)
+    validation = json_response[0]["data"]["IMSUpdateProductWarehouse"]["header"]["error_code"]
 
     if validation:
         print(f"Error msg: {validation}\n")
@@ -141,8 +134,8 @@ def validation(response, data, product_desc):
 
             for bit in data:
                 response_x = hit_stock(bit)
-                json_response_x = json.loads(response_x.text, object_hook=lambda d: SimpleNamespace(**d))
-                validation_x = json_response_x[0].data.IMSUpdateProductWarehouse.header.error_code
+                json_response_x = json.loads(response_x.text)
+                validation_x = json_response_x[0]["data"]["IMSUpdateProductWarehouse"]["header"]["error_code"]
 
                 if validation_x:
                     skuID = product_desc["SKU"]

@@ -1,16 +1,11 @@
 import requests
 import json
-from types import SimpleNamespace
+import sys
 from sku_product_mapping_shopee import sku_product_mapping as shopee_mapping
 
 
 with open("dataSKU.json", "r") as file:
     dataSKU = json.load(file)
-
-  # for skuInfo in sku_dict:
-  #     skuID = skuInfo["SKU"]
-  #     for data_sku in dataSKU:
-  #        skuId = data_sku["SKU"]
 
 
 def getCodeVariant(productID):
@@ -25,10 +20,7 @@ def getCodeVariant(productID):
   }
 
   response = requests.request("GET", url, headers=headers, data=payload)
-
   json_response = json.loads(response.text)
-  # data = json_response.data.stock_list[0].model_stock_list[0].model_id
-  # print(json_response)
 
   # Mengakses model_stock_list secara dinamis
   stock_list = json_response.get("data", {}).get("product_info", {})
@@ -38,7 +30,6 @@ def getCodeVariant(productID):
     variantID = model.get("id")
     skuID = model.get("sku")
     getInfo(productID, skuID, variantID)
-    # print(variantID, skuID)
 
 def getInfo(product, sku, variant):
    
@@ -47,7 +38,6 @@ def getInfo(product, sku, variant):
    total_stock = item.get("Gudang online", 0) + item.get("Toko Jakarta Pusat", 0)
 
    postUpdate(product, variant, total_stock)
-   print(f"Stok {sku}: {total_stock}")
 
 def postUpdate(productID, variantID, stock):
 
@@ -75,8 +65,18 @@ def postUpdate(productID, variantID, stock):
 
   response = requests.request("POST", url, headers=headers, data=payload)
 
-  print(response.text)
 
+def update_progress(progress):
+    bar_length = 50
+    filled_length = int(bar_length * progress)
+    bar = '#' * filled_length + '-' * (bar_length - filled_length)
+    sys.stdout.write(f'\rProgress: [{bar}] {int(progress * 100)}%')
+    sys.stdout.flush()
 
+i = 1
+jumlahKode = len(shopee_mapping)
 for code in shopee_mapping:
    getCodeVariant(code)
+   if (i <= jumlahKode):
+      update_progress((i / jumlahKode))
+      i+=1

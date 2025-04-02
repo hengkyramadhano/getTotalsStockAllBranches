@@ -3,7 +3,6 @@ import json
 import sys
 import importlib
 import pandas as pd
-from types import SimpleNamespace
 from variables import mylist
 import time
 
@@ -41,18 +40,18 @@ def hit_api(sku) :
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
-    json_response = json.loads(response.text, object_hook=lambda d: SimpleNamespace(**d))
+    json_response = json.loads(response.text)
 
-    jumlah_data = len(json_response.data.getCheckoutOptions.online.stores[0].options[0].skuList)
+    jumlah_data = len(json_response["data"]["getCheckoutOptions"]["online"]["stores"][0]["options"][0]["skuList"])
    
     data_list = []
     for item in range(jumlah_data):
       data_row = {}
       for stockItem in range(6):
-        nm_lokasi = json_response.data.getCheckoutOptions.online.stores[stockItem].name
-        skuId = json_response.data.getCheckoutOptions.online.stores[stockItem].options[0].skuList[item].id
-        stock = json_response.data.getCheckoutOptions.online.stores[stockItem].options[0].skuList[item].stockValue
-        price = json_response.data.getCheckoutOptions.online.stores[stockItem].options[0].skuList[item].price
+        nm_lokasi = json_response["data"]["getCheckoutOptions"]["online"]["stores"][stockItem]["name"]
+        skuId = json_response["data"]["getCheckoutOptions"]["online"]["stores"][stockItem]["options"][0]["skuList"][item]["id"]
+        stock = json_response["data"]["getCheckoutOptions"]["online"]["stores"][stockItem]["options"][0]["skuList"][item]["stockValue"]
+        price = json_response["data"]["getCheckoutOptions"]["online"]["stores"][stockItem]["options"][0]["skuList"][item]["price"]
       
         sku_detail = {"SKU" : skuId}
         price_final = {"Price" : price}
