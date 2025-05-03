@@ -76,11 +76,13 @@ def update_stock(sku):
     skuID = ""
 
     # Loop melalui 2 SKU pertama dari daftar SKU
+    sku_state = []
     for product_desc in sku[:count_sku]:
         skuID = product_desc["SKU"]
+        sku_state.append(skuID)
         productID = sku_dict.get(skuID)
         stockID = int(product_desc["Gudang online"]) + int(product_desc["Toko Jakarta Pusat"])
-        # price = hitung_harga(int(product_id["Price"]))
+        price = hitung_harga(int(product_desc["Price"]))
 
         if productID is None:  # Jika SKU tidak ditemukan, lewati iterasi ini
             # print("skip", end=" ")
@@ -92,7 +94,7 @@ def update_stock(sku):
             "stock": str(stockID),
             # "price": str(price)
         })
-    return productWarehouse, product_desc
+    return productWarehouse, product_desc, sku_state
 
 def hit_stock(data):
     
@@ -122,12 +124,12 @@ def hit_stock(data):
 
     return response
 
-def validation(response, data, product_desc):
+def validation(response, data, product_desc, sku_state):
     json_response = json.loads(response.text)
     validation = json_response[0]["data"]["IMSUpdateProductWarehouse"]["header"]["error_code"]
 
     if validation:
-        print(f"Error msg: {validation}\n")
+        print(f"Error msg from {sku_state}: {validation}\n")
         print(f"{response.text}\n")
         
         if validation == "ERROR_VALIDATION":
@@ -172,7 +174,7 @@ def hitung_harga(B2):
     elif B2 < 35000:
         D2 = B2 + (B2 * 0.50)
     elif B2 < 50000:
-        D2 = B2 + (B2 * 0.40)
+        D2 = B2 + (B2 * 0.43)
     elif B2 < 70000:
         D2 = B2 + (B2 * 0.30)
     elif B2 < 100000:
@@ -222,11 +224,11 @@ print(f"Jumlah Perulangan: {jumlahSKU}")
 i = 1
 for j in range(jumlahSKU):
     try:
-        data, data2 = update_stock(batches[j])
+        data, data2, data3 = update_stock(batches[j])
         
         if data:
           responds = hit_stock(data)
-          validation(responds, data, data2)
+          validation(responds, data, data2, data3)
         if (i <= jumlahSKU):
             update_progress((i / jumlahSKU))
             i+=1

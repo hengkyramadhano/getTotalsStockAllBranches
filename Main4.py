@@ -6,6 +6,9 @@ import pandas as pd
 from types import SimpleNamespace
 import time
 
+with open("dataSKU.json", "r") as file:
+    dataSKU = json.load(file)
+        
 def hit_restock(sku):
     url = "https://graphql.jakartanotebook.com/graphql/v3"
 
@@ -38,18 +41,16 @@ def update_progress(progress):
     sys.stdout.write(f'\rProgress: [{bar}] {int(progress * 100)}%')
     sys.stdout.flush()
 
-if len(sys.argv) > 1:
-    file_name = sys.argv[1]
-    module = importlib.import_module(file_name)
-    mylist = getattr(module, 'mylist')
-    jumlahSKU = len(mylist)
+jumlahSKU = len(dataSKU)
 
-    j=0
-    for i in mylist:
-        hit_restock(i)
-        if (j <= jumlahSKU):
-          update_progress((j / jumlahSKU))
-          j+=1
+j=0
+for item in dataSKU:
+  skuID = item["SKU"]
+  checkStock = int(item["Toko Jakarta Pusat"])
 
-else:
-    print("Tidak ada argumen yang diberikan")
+  if (checkStock == 0):
+    hit_restock(skuID)
+
+  if (j <= jumlahSKU):
+     update_progress((j / jumlahSKU))
+     j+=1
