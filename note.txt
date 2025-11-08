@@ -1,0 +1,23 @@
+All command:
+python39 Main.py tiktok
+python39 Main.py netlook
+python39 Main5.py --group jaknet --count 50
+
+
+#!/bin/bash
+
+# Pastikan Python 3 tersedia
+which python3
+
+# Membuat virtual environment
+python3 -m venv venv
+
+# Aktifkan virtual environment
+source venv/bin/activate
+
+# Install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Jalankan automation test
+python -m Tests.login

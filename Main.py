@@ -1,5 +1,6 @@
 import requests
 import json
+import math
 import sys
 import importlib
 import pandas as pd
@@ -47,14 +48,17 @@ def hit_api(sku) :
     data_list = []
     for item in range(jumlah_data):
       data_row = {}
-      for stockItem in range(6):
+      for stockItem in range(6):  # Jumlah dari berapa banyak cabang yang di ambil
         nm_lokasi = json_response["data"]["getCheckoutOptions"]["online"]["stores"][stockItem]["name"]
         skuId = json_response["data"]["getCheckoutOptions"]["online"]["stores"][stockItem]["options"][0]["skuList"][item]["id"]
         stock = json_response["data"]["getCheckoutOptions"]["online"]["stores"][stockItem]["options"][0]["skuList"][item]["stockValue"]
         price = json_response["data"]["getCheckoutOptions"]["online"]["stores"][stockItem]["options"][0]["skuList"][item]["price"]
       
+        if stock == 999999:
+           stock = 100
+        
         sku_detail = {"SKU" : skuId}
-        price_final = {"Price" : price}
+        price_final = {"Price" : hitung_harga(price)}
         product_name_dict = {nm_lokasi : stock}
         data_row.update(sku_detail)
         data_row.update(price_final)
@@ -73,6 +77,43 @@ def update_progress(progress):
     bar = '#' * filled_length + '-' * (bar_length - filled_length)
     sys.stdout.write(f'\rProgress: [{bar}] {int(progress * 100)}%')
     sys.stdout.flush()
+
+def hitung_harga(B2):
+    # Menghitung D2 berdasarkan skema harga
+    if B2 < 5000:
+        D2 = B2 + 3800
+    elif B2 < 10000:
+        D2 = B2 + 6500
+    elif B2 < 20000:
+        D2 = B2 + 2000 + (B2 * 0.52)
+    elif B2 < 35000:
+        D2 = B2 + (B2 * 0.50)
+    elif B2 < 50000:
+        D2 = B2 + (B2 * 0.43)
+    elif B2 < 70000:
+        D2 = B2 + (B2 * 0.37)
+    elif B2 < 100000:
+        D2 = B2 + (B2 * 0.28)
+    elif B2 < 150000:
+        D2 = B2 + (B2 * 0.25)
+    elif B2 < 200000:
+        D2 = B2 + (B2 * 0.20)
+    elif B2 < 250000:
+        D2 = B2 + (B2 * 0.20)
+    elif B2 < 300000:
+        D2 = B2 + (B2 * 0.20)
+    elif B2 < 500000:
+        D2 = B2 + (B2 * 0.20)
+    else:
+        D2 = B2  # Jika lebih dari 500000, tidak ada tambahan dalam rumus
+
+    # Menghitung E2
+    E2 = D2 * 0.14 + D2 + 1400
+
+    # Menghitung F2 dengan ROUNDUP ke ratusan terdekat
+    F2 = math.ceil(E2 / 100) * 100
+
+    return F2
 
 # export to excel
 def export_to_excel():
