@@ -107,7 +107,7 @@ def hitung_harga(B2):
     else:
         D2 = B2  # Jika lebih dari 500000, tidak ada tambahan dalam rumus
 
-    # Menghitung E2
+    # Menghitung E2 (0.14 adalah komisi MP), (1400 adalah biaya pemrosesan mp)
     E2 = D2 * 0.14 + D2 + 1400
 
     # Menghitung F2 dengan ROUNDUP ke ratusan terdekat
