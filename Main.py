@@ -38,7 +38,7 @@ def hit_api(sku) :
     ]
 
     data = json_response["data"]["getCheckoutOptions"]["online"]
-    jumlah_data = len(json_response["data"]["getCheckoutOptions"]["online"]["stores"])
+    jumlah_data = len(json_response["data"]["getCheckoutOptions"]["online"]["stores"][0]["options"][0]["skuList"])
 
     # Buat dictionary: nama_toko -> data store
     store_map = {store["name"]: store for store in data["stores"]}
@@ -62,10 +62,13 @@ def hit_api(sku) :
            stock = 100
         
         sku_detail = {"SKU" : skuId}
-        price_final = {"Price" : hitung_harga(price)}
+        price_mp, price_shopee = hitung_harga(price)
+        mp_price_final = {"Price MP" : price_mp}
+        shopee_price_final = {"Price Shopee" : price_shopee}
         product_name_dict = {nm_toko : stock}
         data_row.update(sku_detail)
-        data_row.update(price_final)
+        data_row.update(mp_price_final)
+        data_row.update(shopee_price_final)
         data_row.update(product_name_dict)
         
       data_list.append(data_row)
@@ -119,11 +122,13 @@ def hitung_harga(B2):
 
   # Menghitung harga jual marketplace
   harga_mp = (target_bersih + 1250) / 0.80
+  harga_shopee = (target_bersih + 1250) / 0.76
 
   # Pembulatan ke ratusan
   harga_final = math.ceil(harga_mp / 100) * 100
+  harga_final_shopee = math.ceil(harga_shopee / 100) * 100
   
-  return harga_final
+  return harga_final, harga_final_shopee
 
 # export to excel
 def export_to_excel():
